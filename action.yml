@@ -20,6 +20,7 @@ runs:
       shell: bash
       run: |
         set -x
+        set +e
 
         bucketname="${{ inputs.bucket-name }}"
         s3path="${{ inputs.s3-path }}"
