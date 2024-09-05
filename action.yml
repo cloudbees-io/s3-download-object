@@ -24,22 +24,35 @@ runs:
         bucketname="${{ inputs.bucket-name }}"
         s3path="${{ inputs.s3-path }}"
 
-        s3uri="$bucketname"
+        s3url="$bucketname"
 
         # if bucketname does not have s3:// prefix 
         if [[ $bucketname != s3://* ]]; then
-           bucketname="s3://$bucketname"
+          bn=$bucketname
+          bucketname="s3://$bucketname"
+        else
+          bn=${bucketname#s3://}
         fi 
 
         #if s3path does not start with /
         if [[ $s3path != /* ]]; then
-           s3path="/$s3path"
+          s3p=$s3path
+          s3path="/$s3path"
+        else
+          s3p=${$s3path#/}
         fi 
         
         # final s3url
-        s3uri="$bucketname$s3path"
+        s3url="$bucketname$s3path"
 
         echo $s3uri
 
-        aws s3 cp $s3uri ${{ inputs.file-path }} --recursive
- 
+        cmd=$(aws s3api head-object --bucket $bn --key $s3p &> /dev/null)
+      
+        if [ $? -ne 0 ]; then
+           echo "is a folder"
+           aws s3 cp $s3url ${{ inputs.file-path }} --recursive
+        else
+            echo "is a file"
+            aws s3 cp $s3url ${{ inputs.file-path }}  
+        fi      
