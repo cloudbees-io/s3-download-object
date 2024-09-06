@@ -57,5 +57,7 @@ runs:
         else
             echo "is a file"
             aws s3 cp $s3url ${{ inputs.file-path }}  
-            ls -ltr .
+            ls -ltr
+            cd aquasec
+            ls -ltr
         fi      
