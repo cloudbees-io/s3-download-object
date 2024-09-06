@@ -53,7 +53,9 @@ runs:
         if [ $? -ne 0 ]; then
            echo "is a folder"
            aws s3 cp $s3url ${{ inputs.file-path }} --recursive
+           ls -ltr .
         else
             echo "is a file"
             aws s3 cp $s3url ${{ inputs.file-path }}  
+            ls -ltr .
         fi      
