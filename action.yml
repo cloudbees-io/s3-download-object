@@ -45,8 +45,19 @@ runs:
         # echo $cmd
         if [[ $cmd  == *"PRE"* ]]; then
           echo "It's a folder!"
-          aws s3 cp $s3url ${{ inputs.file-path }} --recursive
+          aws s3 cp $s3url ${{ inputs.file-path }} --recursive | tee "${{cloudbees.workspace}}/aws_response.txt"
         else
           echo "Its a file!"
-          aws s3 cp $s3url ${{ inputs.file-path }}  
+          aws s3 cp $s3url ${{ inputs.file-path }} | tee "${{cloudbees.workspace}}/aws_response.txt"
         fi
+
+        grep download: "${{cloudbees.workspace}}/aws_response.txt" | sed 's/.*download: //' | awk '{print "| " $1 " | " $3 " |"}' | tee "$CLOUDBEES_OUTPUTS/s3_download_evidence"
+    
+    - name: publish-evidence
+      uses: cloudbees-io/publish-evidence-item@v1
+      with:
+        content: |-
+          # S3 Download results
+          | S3 | Local file |
+          | ---- | ---- |         
+          ${{ steps.s3-action-download.outputs.s3_download_evidence }}
